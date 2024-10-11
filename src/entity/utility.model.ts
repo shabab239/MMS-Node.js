@@ -6,7 +6,7 @@ export class Utility {
     id?: number;
 
     @Column("decimal")
-    amount?: number;
+    cost?: number;
 
     @Column()
     month?: number;

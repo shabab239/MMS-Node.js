@@ -1,82 +1,79 @@
 import {Body, Delete, Get, JsonController, Param, Post, Put, Req, UseBefore} from "routing-controllers";
 import {AppDataSource} from "../datasourse";
 import {jwtMiddleware} from "../util/jwt.middleware";
-import {User} from "../entity/user.model";
-import bcrypt from "bcrypt";
+import {Bazar} from "../entity/bazar.model";
 
 
-@JsonController("/api/user")
+@JsonController("/api/bazar")
 @UseBefore(jwtMiddleware)
-export class UserController {
+export class BazarController {
 
-    @Post("/createUser")
-    async createUser(@Body() userData: User, @Req() req: any) {
-        const userRepository = AppDataSource.getRepository(User);
+    @Post("/createBazar")
+    async createBazar(@Body() bazarData: Bazar, @Req() req: any) {
+        const bazarRepository = AppDataSource.getRepository(Bazar);
 
-        userData.password = await bcrypt.hash(userData.password ?? '', 10);
-        userData.messId = req.messId;
-
-        const user = userRepository.create(userData);
+        bazarData.messId = req.messId;
+        const bazar = bazarRepository.create(bazarData);
 
         try {
-            await userRepository.save(user);
-            return user;
+            await bazarRepository.save(bazar);
+            return bazar;
         } catch (error: any) {
-            throw new Error("Error creating user: " + error.message);
+            throw new Error("Error creating bazar: " + error.message);
         }
     }
 
-    @Get("/getAllUsers")
-    async getAllUsers(@Req() req: any) {
-        const userRepository = AppDataSource.getRepository(User);
+    @Get("/getAllBazars")
+    async getAllBazars(@Req() req: any) {
+        const bazarRepository = AppDataSource.getRepository(Bazar);
 
         try {
             const messId = req.messId;
-            return await userRepository.find({where: {messId}});
+            return await bazarRepository.find({where: {messId}});
         } catch (error: any) {
-            throw new Error("Error fetching users: " + error.message);
+            throw new Error("Error fetching bazars: " + error.message);
         }
     }
 
-    @Get("/getUserById/:id")
-    async getUserById(@Param("id") id: number, @Req() req: any) {
-        const userRepository = AppDataSource.getRepository(User);
+    @Get("/getBazarById/:id")
+    async getBazarById(@Param("id") id: number, @Req() req: any) {
+        const bazarRepository = AppDataSource.getRepository(Bazar);
 
         try {
             const messId = req.messId;
-            return await userRepository.findOneOrFail({where: {id, messId}});
+            return await bazarRepository.findOneOrFail({where: {id, messId}});
         } catch (error: any) {
-            throw new Error("User not found: " + error.message);
+            throw new Error("Bazar not found: " + error.message);
         }
     }
 
-    @Put("/updateUser/:id")
-    async updateUser(@Param("id") id: number, @Body() userData: Partial<User>, @Req() req: any) {
-        const userRepository = AppDataSource.getRepository(User);
+    @Put("/updateBazar/:id")
+    async updateBazar(@Param("id") id: number, @Body() bazarData: Partial<Bazar>, @Req() req: any) {
+        const bazarRepository = AppDataSource.getRepository(Bazar);
 
         try {
             const messId = req.messId;
-            await userRepository.findOneOrFail({where: {id, messId}});
+            await bazarRepository.findOneOrFail({where: {id, messId}});
 
-            userData.messId = messId;
-            await userRepository.update(id, userData);
+            bazarData.messId = messId;
+            await bazarRepository.update(id, bazarData);
 
-            return await userRepository.findOneOrFail({where: {id, messId}});
+            return await bazarRepository.findOneOrFail({where: {id, messId}});
         } catch (error: any) {
-            throw new Error("Error updating user: " + error.message);
+            throw new Error("Error updating bazar: " + error.message);
         }
     }
 
-    @Delete("/deleteUser/:id")
-    async deleteUser(@Param("id") id: number, @Req() req: any) {
-        const userRepository = AppDataSource.getRepository(User);
+    @Delete("/deleteBazar/:id")
+    async deleteBazar(@Param("id") id: number, @Req() req: any) {
+        const bazarRepository = AppDataSource.getRepository(Bazar);
 
         try {
             const messId = req.messId;
-            await userRepository.findOneOrFail({where: {id, messId}});
-            await userRepository.delete(id);
+            await bazarRepository.findOneOrFail({where: {id, messId}});
+            await bazarRepository.delete(id);
         } catch (error: any) {
-            throw new Error("Error deleting user: " + error.message);
+            throw new Error("Error deleting bazar: " + error.message);
         }
     }
 }
