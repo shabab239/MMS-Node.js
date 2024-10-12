@@ -1,9 +1,10 @@
 import {Column, Entity, OneToMany, PrimaryGeneratedColumn} from "typeorm";
 import {Meal} from "./meal.model";
-import {UserRole} from "./user.role.model";
+import {UserRole} from "./user.role";
 import {Bazar} from "./bazar.model";
 import {Bill} from "./bill.model";
 import {IsNotEmpty, IsString} from "class-validator";
+import {Transaction} from "./transaction.model";
 
 @Entity("users")
 export class User {
@@ -29,6 +30,9 @@ export class User {
     })
     role?: UserRole;
 
+    @Column("decimal", {default: 0})
+    balance?: number;
+
     @OneToMany(() => Meal, meal => meal.user)
     meals?: Meal[];
 
@@ -37,6 +41,9 @@ export class User {
 
     @OneToMany(() => Bill, bill => bill.user)
     bills?: Bill[];
+
+    @OneToMany(() => Transaction, transaction => transaction.user)
+    transactions?: Transaction[];
 
     @Column({nullable: false})
     messId?: number; // Loose relation to mess

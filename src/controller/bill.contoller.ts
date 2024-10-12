@@ -21,7 +21,6 @@ export class BillController {
         const messId = req.messId;
 
         try {
-            // 1. Get total bazar cost for the month
             const totalBazarCost = await bazarRepository
                 .createQueryBuilder("bazar")
                 .where("bazar.messId = :messId", { messId })
@@ -32,7 +31,6 @@ export class BillController {
 
             const totalBazar = totalBazarCost?.total || 0;
 
-            // 2. Get all meals for the month
             const meals = await mealRepository.find({
                 where: { messId, month, year },
                 relations: ["user"]
@@ -45,7 +43,6 @@ export class BillController {
                 const userId = (meal.user as any).id;
                 let userTotalMeals = 0;
 
-                // Assuming your Meal entity has days as dynamic fields (e.g. day1, day2, etc.)
                 for (let i = 1; i <= 31; i++) {
                     const dayMeal = (meal as any)[`day${i}`] || 0;
                     userTotalMeals += dayMeal;
@@ -55,10 +52,8 @@ export class BillController {
                 userMeals[userId] = (userMeals[userId] || 0) + userTotalMeals;
             });
 
-            // 3. Calculate cost per meal
             const costPerMeal = totalMeals > 0 ? totalBazar / totalMeals : 0;
 
-            // 4. Get total utility costs for the month, year, and messId
             const totalUtilityCost = await utilityRepository
                 .createQueryBuilder("utility")
                 .where("utility.messId = :messId", { messId })
@@ -69,13 +64,10 @@ export class BillController {
 
             const utilityTotal = totalUtilityCost?.total || 0;
 
-            // 5. Get all users for the given messId
             const users = await userRepository.find({ where: { messId } });
 
-            // Calculate utility cost per head
             const utilityCostPerHead = users.length > 0 ? utilityTotal / users.length : 0;
 
-            // 6. Calculate the bill for each user
             const userBills = users.map(user => {
                 const mealsEaten = userMeals[user.id as number] || 0;
                 const mealCost = mealsEaten * costPerMeal;

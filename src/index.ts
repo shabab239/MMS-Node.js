@@ -6,9 +6,10 @@ import express from "express";
 import {AuthController} from "./controller/auth.controller";
 import {MealController} from "./controller/meal.contoller";
 import {BillController} from "./controller/bill.contoller";
+import {TransactionController} from "./controller/transaction.contoller";
 
 const app = createExpressServer({
-    controllers: [UserController, AuthController, MealController, BillController],
+    controllers: [UserController, AuthController, MealController, BillController, TransactionController],
 });
 
 app.use(express.json());

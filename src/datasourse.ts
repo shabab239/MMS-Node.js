@@ -6,6 +6,7 @@ import {Bill} from "./entity/bill.model";
 import {Meal} from "./entity/meal.model";
 import {Mess} from "./entity/mess.model";
 import {Utility} from "./entity/utility.model";
+import {Transaction} from "./entity/transaction.model";
 
 dotenv.config();
 
@@ -18,5 +19,5 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_DATABASE,
     synchronize: true, // Set to false in production
     logging: false,
-    entities: [Bazar, Bill, Meal, Mess, User, Utility],
+    entities: [Bazar, Bill, Meal, Mess, User, Utility, Transaction],
 });

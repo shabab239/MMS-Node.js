@@ -8,6 +8,6 @@ export class Mess {
     @Column({length: 150, nullable: false})
     name?: string;
 
-    @Column({default: 0})
+    @Column("decimal", {default: 0})
     balance?: number;
 }
