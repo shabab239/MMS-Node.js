@@ -3,6 +3,7 @@ import {AppDataSource} from "../datasourse";
 import {jwtMiddleware} from "../util/jwt.middleware";
 import {Utility} from "../entity/utility.model";
 import {Mess} from "../entity/mess.model";
+import { Transactional } from "typeorm-transactional";
 
 
 @JsonController("/api/utility")
@@ -10,6 +11,7 @@ import {Mess} from "../entity/mess.model";
 export class UtilityController {
 
     @Post("/createUtility")
+    @Transactional()
     async createUtility(@Body() utilityData: Utility, @Req() req: any) {
         const utilityRepository = AppDataSource.getRepository(Utility);
         const messRepository = AppDataSource.getRepository(Mess);
@@ -60,6 +62,7 @@ export class UtilityController {
     }
 
     @Delete("/deleteUtility/:id")
+    @Transactional()
     async deleteUtility(@Param("id") id: number, @Req() req: any) {
         const utilityRepository = AppDataSource.getRepository(Utility);
         const messRepository = AppDataSource.getRepository(Mess);

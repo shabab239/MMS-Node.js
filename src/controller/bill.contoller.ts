@@ -5,6 +5,7 @@ import {Meal} from "../entity/meal.model";
 import {Bazar} from "../entity/bazar.model";
 import {User} from "../entity/user.model";
 import {Utility} from "../entity/utility.model";
+import { Transactional } from "typeorm-transactional";
 
 
 @JsonController("/api/bill")
@@ -12,11 +13,12 @@ import {Utility} from "../entity/utility.model";
 export class BillController {
 
     @Post("/generateBill/:month/:year")
+    @Transactional()
     async generateBill(@Req() req: any, @Param("month") month: number, @Param("year") year: number) {
         const mealRepository = AppDataSource.getRepository(Meal);
         const bazarRepository = AppDataSource.getRepository(Bazar);
         const userRepository = AppDataSource.getRepository(User);
-        const utilityRepository = AppDataSource.getRepository(Utility); // Assuming you have a Utility entity
+        const utilityRepository = AppDataSource.getRepository(Utility);
 
         const messId = req.messId;
 

@@ -5,6 +5,7 @@ import {Transaction} from "../entity/transaction.model";
 import {TransactionType} from "../entity/transaction.type";
 import {User} from "../entity/user.model";
 import {Mess} from "../entity/mess.model";
+import { Transactional } from "typeorm-transactional";
 
 
 @JsonController("/api/transaction")
@@ -12,6 +13,7 @@ import {Mess} from "../entity/mess.model";
 export class TransactionController {
 
     @Post("/createTransaction")
+    @Transactional()
     async createTransaction(@Body() transactionData: Transaction, @Req() req: any) {
         const transactionRepository = AppDataSource.getRepository(Transaction);
         const userRepository = AppDataSource.getRepository(User);
@@ -42,6 +44,7 @@ export class TransactionController {
     }
 
     @Delete("/deleteTransaction/:id")
+    @Transactional()
     async deleteTransaction(@Param("id") id: number, @Req() req: any) {
         const transactionRepository = AppDataSource.getRepository(Transaction);
         const userRepository = AppDataSource.getRepository(User);

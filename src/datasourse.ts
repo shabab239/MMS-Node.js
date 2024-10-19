@@ -7,6 +7,7 @@ import {Meal} from "./entity/meal.model";
 import {Mess} from "./entity/mess.model";
 import {Utility} from "./entity/utility.model";
 import {Transaction} from "./entity/transaction.model";
+import { addTransactionalDataSource } from "typeorm-transactional";
 
 dotenv.config();
 
@@ -21,3 +22,5 @@ export const AppDataSource = new DataSource({
     logging: false,
     entities: [Bazar, Bill, Meal, Mess, User, Utility, Transaction],
 });
+
+addTransactionalDataSource(AppDataSource);

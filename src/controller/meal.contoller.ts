@@ -4,7 +4,7 @@ import { jwtMiddleware } from "../util/jwt.middleware";
 import { Meal } from "../entity/meal.model";
 import { User } from "../entity/user.model";
 import { MealDTO } from "../dto/meal.dto";
-
+import { ApiResponse } from "../util/api.response";
 
 @JsonController("/api/meal")
 @UseBefore(jwtMiddleware)
@@ -17,6 +17,7 @@ export class MealController {
         @QueryParam("year") year: string,
         @QueryParam("userId") userId: string
     ) {
+        const response = new ApiResponse();
         const mealRepository = AppDataSource.getRepository(Meal);
 
         try {
@@ -26,24 +27,27 @@ export class MealController {
             if (userId && !isNaN(parseInt(userId))) {
                 whereClause.user = { id: parseInt(userId) };
             } else {
-                throw new Error("Invalid user ID provided.");
+                return response.error("Invalid user ID provided.");
             }
 
             if (month && !isNaN(parseInt(month))) {
                 whereClause.month = parseInt(month);
             } else {
-                throw new Error("Invalid month provided.");
+                return response.error("Invalid month provided.");
             }
 
             if (year && !isNaN(parseInt(year))) {
                 whereClause.year = parseInt(year);
             } else {
-                throw new Error("Invalid year provided.");
+                return response.error("Invalid year provided.");
             }
 
-            return await mealRepository.find({ where: whereClause });
+            const meals = await mealRepository.find({ where: whereClause });
+            response.setData("meals", meals);
+            response.success("Meals fetched successfully");
+            return response;
         } catch (error: any) {
-            throw new Error("Error fetching meals: " + error.message);
+            return response.errorFromException(error);
         }
     }
 
@@ -54,6 +58,7 @@ export class MealController {
         @QueryParam("month") month: string,
         @QueryParam("year") year: string
     ) {
+        const response = new ApiResponse();
         const mealRepository = AppDataSource.getRepository(Meal);
         const userRepository = AppDataSource.getRepository(User);
 
@@ -65,6 +70,7 @@ export class MealController {
                 where: whereClause,
                 relations: ["user"]
             });
+
             const users = await userRepository.find({ where: { messId } });
 
             const existingMealRecords = new Map<number, Meal>();
@@ -88,37 +94,46 @@ export class MealController {
 
             const dayNum = parseInt(day);
             if (isNaN(dayNum) || dayNum < 1 || dayNum > 31) {
-                throw new Error("Invalid day parameter. It must be between 1 and 31.");
+                return response.error("Invalid day parameter. It must be between 1 and 31.");
             }
 
             const dayColumn = `day${dayNum}`;
 
-            meals = await mealRepository.createQueryBuilder("meals")
-                .select(["meals.userId", `${dayColumn} AS meals`, `${day} AS meals`])
-                .where("meals.messId = :messId", { messId })
-                .andWhere("meals.month = :month", { month })
-                .andWhere("meals.year = :year", { year })
-                .getRawMany();
+            meals = await mealRepository.query(`
+                SELECT U.id AS userId, U.name AS username, ${dayColumn} AS meals, ${day} AS day, ${month} AS month, ${year} AS year
+                FROM meals M JOIN users U ON U.id = M.userId
+                WHERE M.messId = ?
+                AND U.messId = ?
+                AND month = ?
+                AND year = ?
+            `, [messId, messId, month, year]);
 
-            return meals;
+            meals = meals.map(meal => ({
+                ...meal,
+                meals: Number((meal as any).meals),
+            }));
+
+            response.setData("meals", meals);
+            response.success("Daily meals fetched successfully");
+            return response;
 
         } catch (error: any) {
-            throw new Error("Error fetching meals: " + error.message);
+            return response.errorFromException(error);
         }
     }
 
-
     @Post("/recordMeals")
     async recordMeals(@Req() req: any, @Body() meals: MealDTO[]) {
+        const response = new ApiResponse();
         const mealRepository = AppDataSource.getRepository(Meal);
         const messId = req.messId;
 
         try {
             for (const mealData of meals) {
-                const { userId, day, meals: mealsCount, month, year } = mealData;
+                const { userId, day, meals, month, year } = mealData;
 
-                if (!userId || !day || !mealsCount || !month || !year) {
-                    throw new Error("Required params are not present.");
+                if (userId == null || day == null || meals == null || month == null || year == null) {
+                    return response.error("Required params are not present.");
                 }
 
                 let mealRecord = await mealRepository.findOne({
@@ -135,20 +150,18 @@ export class MealController {
                 }
 
                 if (day >= 1 && day <= 31) {
-                    (mealRecord as any)[`day${day}`] = mealsCount;
+                    (mealRecord as any)[`day${day}`] = meals;
                 } else {
-                    throw new Error("Day must be between 1 and 31.");
+                    return response.error("Day must be between 1 and 31.");
                 }
 
                 await mealRepository.save(mealRecord);
             }
 
-            return { message: "Meals recorded successfully" };
+            response.success("Meals recorded successfully");
+            return response;
         } catch (error: any) {
-            throw new Error("Error recording meals: " + error.message);
+            return response.errorFromException(error);
         }
     }
-
 }
-
-

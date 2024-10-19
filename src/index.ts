@@ -1,15 +1,19 @@
 import "reflect-metadata";
-import {createExpressServer} from "routing-controllers";
-import {UserController} from "./controller/user.contoller";
-import {AppDataSource} from "./datasourse";
+import { createExpressServer } from "routing-controllers";
+import { UserController } from "./controller/user.contoller";
+import { AppDataSource } from "./datasourse";
 import express from "express";
-import {AuthController} from "./controller/auth.controller";
-import {MealController} from "./controller/meal.contoller";
-import {BillController} from "./controller/bill.contoller";
-import {TransactionController} from "./controller/transaction.contoller";
+import { AuthController } from "./controller/auth.controller";
+import { MealController } from "./controller/meal.contoller";
+import { BillController } from "./controller/bill.contoller";
+import { TransactionController } from "./controller/transaction.contoller";
+import { BazarController } from "./controller/bazar.contoller";
+import { addTransactionalDataSource, initializeTransactionalContext } from "typeorm-transactional";
+
+initializeTransactionalContext()
 
 const app = createExpressServer({
-    controllers: [UserController, AuthController, MealController, BillController, TransactionController],
+    controllers: [UserController, AuthController, MealController, BillController, TransactionController, BazarController],
 });
 
 app.use(express.json());
@@ -25,3 +29,4 @@ AppDataSource.initialize()
     .catch((error) => {
         console.error("Error during Data Source initialization", error);
     });
+
